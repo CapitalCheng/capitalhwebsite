@@ -109,9 +109,10 @@
   .what-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start; }
   .what-body { font-size: 17px; font-weight: 300; line-height: 1.8; color: var(--text-muted); margin-top: 32px; }
   .what-right { padding-top: 12px; }
-  .stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+  .stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; position: relative; }
   .stat-card { background: var(--bg-3); padding: 36px 32px; border: 1px solid var(--rule); }
   .stat-num { font-family: var(--serif); font-size: 52px; font-weight: 300; line-height: 1; letter-spacing: -0.02em; color: var(--text); margin-bottom: 8px; }
+  /* span hidden by growthmark.js at runtime — canvas owns the full stop */
   .stat-num span { color: var(--cta); }
   .stat-desc { font-size: 13px; font-weight: 400; color: var(--text-dim); line-height: 1.5; text-transform: uppercase; letter-spacing: 0.06em; }
 
@@ -312,7 +313,10 @@
   }, { threshold: 0.12 });
   document.querySelectorAll('.reveal:not(#hero .reveal)').forEach(el => observer.observe(el));
 </script>
-<script src="animation.js"></script>
+
+<!-- Animations — load after DOM is ready -->
+<script src="northstar.js"></script>
+<script src="growthmark.js"></script>
 
 </body>
 </html>
