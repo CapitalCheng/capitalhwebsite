@@ -9,9 +9,7 @@
  *   - .stat-num span     — the red full stop in each card (4 total)
  *
  * The HTML spans are hidden via CSS; canvas owns the full stop rendering.
- *
- * Column heights [1, 2, 3, 5, 7] form a hockey stick growing
- * upward and to the right from each full stop anchor.
+ * Fully responsive — reinitialises on resize via ResizeObserver.
  */
 (function () {
 
@@ -26,7 +24,7 @@
   // ── Inject canvas over the stat-row ──────────────────────────
   statRow.style.position = 'relative';
   const canvas = document.createElement('canvas');
-  canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;';
+  canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;overflow:hidden;';
   statRow.appendChild(canvas);
 
   const ctx = canvas.getContext('2d');
@@ -38,18 +36,17 @@
   const GRAY_DOT  = [130, 128, 126];
 
   // ── Hockey stick column heights ───────────────────────────────
-  // Col 0 = static full stop (not animated)
-  // Cols 1–5 = animated dots growing right and up
   const COL_HEIGHTS = [1, 2, 3, 5, 7];
 
   // ── State ─────────────────────────────────────────────────────
   let W, H, CX, CY;
   let DOT_R   = 3;
   let SPACING = 9;
-  let anchors = [];   // [{x, y}] center of each full stop, one per card
+  let anchors = [];
   let dots    = [];
   let lastTs  = null;
   let gT      = 0;
+  let running = false;
 
   const CHAOS = 0, SEEKING = 1, SETTLED = 2;
 
@@ -66,31 +63,38 @@
   }
 
   // ── Build target grid ─────────────────────────────────────────
-  // Each card gets a hockey-stick dot grid anchored to its full stop
   function buildTargets() {
-    const targets  = [];
-    const rowRect  = statRow.getBoundingClientRect();
+    const targets = [];
+    const rowRect = statRow.getBoundingClientRect();
     anchors = [];
+
+    // Derive tile width from actual layout — works for both desktop and mobile
+    const tileW = rowRect.width / 2;
 
     document.querySelectorAll('.stat-num span').forEach(span => {
       const sr       = span.getBoundingClientRect();
       const fontSize = parseFloat(getComputedStyle(span).fontSize);
 
-      // Dot radius matches the visual weight of the Cormorant period
-      DOT_R   = Math.max(2.5, fontSize * 0.07);
-      SPACING = DOT_R * 2 + 3;
+      // Scale DOT_R relative to tile width so dots always fit within card
+      // Max dot radius = tile width / 60 (fits 7-col hockey stick comfortably)
+      const maxR = tileW / 60;
+      DOT_R   = clamp(fontSize * 0.07, 2.0, maxR);
+      SPACING = DOT_R * 2 + 2;
 
-      // Center of the period glyph
       const cx = sr.left + sr.width  * 0.5 - rowRect.left;
       const cy = sr.bottom - rowRect.top - fontSize * 0.18;
 
       anchors.push({ x: cx, y: cy });
 
-      // Animated columns: offset by one SPACING step from the static dot
+      // Clamp hockey stick rightward extent to stay within the tile
+      const maxX = (Math.floor(sr.left / tileW) + 1) * tileW - rowRect.left - 8;
+
       COL_HEIGHTS.forEach((h, ci) => {
+        const colX = cx + (ci + 1) * SPACING;
+        if (colX > maxX) return; // skip columns that would overflow the tile
         for (let ri = 0; ri < h; ri++) {
           targets.push({
-            x:   cx + (ci + 1) * SPACING,
+            x:   colX,
             y:   cy - ri * SPACING,
             col: ci,
             row: ri,
@@ -104,7 +108,6 @@
 
   // ── Dot lifecycle ─────────────────────────────────────────────
   function spawnDot(d, tidx, targets) {
-    // All dots spawn from canvas center — chaos radiates outward
     d.x = CX + (Math.random() - 0.5) * 28;
     d.y = CY + (Math.random() - 0.5) * 28;
 
@@ -113,20 +116,20 @@
     d.vx = Math.cos(angle) * spd;
     d.vy = Math.sin(angle) * spd;
 
-    d.baseAlpha    = 0.75 + Math.random() * 0.2;
-    d.state        = CHAOS;
-    d.order        = 0;
-    d.life         = 0;
-    d.chaosTime    = 0.06 + Math.random() * 0.4;
-    d.pull         = 0.10 + Math.random() * 0.07;
-    d.phase        = Math.random() * Math.PI * 2;
-    d.tidx         = tidx;
-    d.target       = targets[tidx];
-    d.settleTimer  = 0;
+    d.baseAlpha     = 0.75 + Math.random() * 0.2;
+    d.state         = CHAOS;
+    d.order         = 0;
+    d.life          = 0;
+    d.chaosTime     = 0.06 + Math.random() * 0.4;
+    d.pull          = 0.10 + Math.random() * 0.07;
+    d.phase         = Math.random() * Math.PI * 2;
+    d.tidx          = tidx;
+    d.target        = targets[tidx];
+    d.settleTimer   = 0;
     d.maxSettleTime = 5.0 + Math.random() * 3.0;
   }
 
-  // ── Initialise ────────────────────────────────────────────────
+  // ── Initialise / reinitialise ─────────────────────────────────
   function init() {
     const rect = statRow.getBoundingClientRect();
     W = rect.width;
@@ -141,7 +144,6 @@
     CY = H / 2;
 
     const targets = buildTargets();
-    const total   = targets.length;
 
     // Stagger spawn so shape builds left → right
     dots = targets.map((tgt, i) => {
@@ -164,7 +166,7 @@
 
     ctx.clearRect(0, 0, W, H);
 
-    // Draw static full stops — canvas owns these
+    // Static full stops
     anchors.forEach(a => {
       ctx.beginPath();
       ctx.arc(a.x, a.y, DOT_R, 0, Math.PI * 2);
@@ -172,7 +174,6 @@
       ctx.fill();
     });
 
-    // Animate dots
     dots.forEach(d => {
       d.age += dt;
       if (d.age < 0) return;
@@ -213,13 +214,10 @@
       } else {
         d.settleTimer += dt;
         const tgt = d.target;
-        // Tiny breathing shimmer when settled
         d.x = tgt.x + Math.sin(gT * 0.6 + d.phase) * 0.3;
         d.y = tgt.y + Math.cos(gT * 0.5 + d.phase) * 0.3;
         d.order = 1;
-        if (d.settleTimer > d.maxSettleTime) {
-          spawnDot(d, d.tidx, d._targets);
-        }
+        if (d.settleTimer > d.maxSettleTime) spawnDot(d, d.tidx, d._targets);
       }
 
       const [r, g, b] = lerpCol(CHAOS_COL, CTA, d.order);
@@ -232,7 +230,7 @@
       ctx.fill();
     });
 
-    // Subtle gray pulsing source at center
+    // Gray pulsing center source
     const pulse = (Math.sin(gT * 2.0) * 0.5 + 0.5);
     ctx.beginPath();
     ctx.arc(CX, CY, 1.8 + pulse * 1.2, 0, Math.PI * 2);
@@ -242,10 +240,21 @@
     requestAnimationFrame(tick);
   }
 
-  // ── Boot — wait for layout to settle ─────────────────────────
-  setTimeout(() => {
-    init();
-    requestAnimationFrame(tick);
-  }, 200);
+  // ── Boot — ResizeObserver handles mobile, orientation, resize ─
+  let resizeTimer = null;
+
+  const ro = new ResizeObserver(() => {
+    // Debounce — wait for layout to fully settle before reinitialising
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      init();
+      if (!running) {
+        running = true;
+        requestAnimationFrame(tick);
+      }
+    }, 120);
+  });
+
+  ro.observe(statRow);
 
 })();
