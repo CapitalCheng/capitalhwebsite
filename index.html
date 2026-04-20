@@ -1,249 +1,318 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Capital H</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Capital H — Applied AI Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
 
-    :root {
-      --bg: #fafaf8;
-      --fg: #1a1a18;
-      --muted: #6b6b67;
-      --border: rgba(26, 26, 24, 0.12);
-      --accent: #1a1a18;
-    }
+<style>
+  :root {
+    --bg:          oklch(98% 0.002 240);
+    --bg-2:        oklch(96% 0.003 240);
+    --bg-3:        oklch(93% 0.003 240);
+    --text:        oklch(12% 0.005 240);
+    --text-muted:  oklch(42% 0.006 240);
+    --text-dim:    oklch(60% 0.005 240);
+    --cta:         oklch(40% 0.130 18);
+    --cta-hover:   oklch(46% 0.140 18);
+    --cta-text:    oklch(97% 0.005 60);
+    --rule:        oklch(88% 0.004 240);
+    --serif:       'Cormorant Garamond', Georgia, serif;
+    --sans:        'DM Sans', system-ui, sans-serif;
+    --easing:      cubic-bezier(0.16, 1, 0.3, 1);
+  }
 
-    html, body {
-      height: 100%;
-    }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-weight: 300;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
 
-    body {
-      background: var(--bg);
-      color: var(--fg);
-      font-family: 'DM Mono', monospace;
-      font-weight: 300;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.9s var(--easing), transform 0.9s var(--easing);
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
 
-    /* Header */
-    header {
-      padding: 2rem 2.5rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 0.5px solid var(--border);
-    }
+  .container { max-width: 1200px; margin: 0 auto; padding: 0 48px; }
+  hr.rule { border: none; border-top: 1px solid var(--rule); }
 
-    .logo {
-      font-family: 'Playfair Display', serif;
-      font-size: 20px;
-      font-weight: 400;
-      letter-spacing: -0.3px;
-    }
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 28px 0;
+    transition: background 0.4s ease, padding 0.4s ease;
+  }
+  nav.scrolled {
+    background: oklch(98% 0.002 240 / 0.94);
+    backdrop-filter: blur(12px);
+    padding: 18px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  nav .container { display: flex; align-items: center; justify-content: space-between; }
+  .nav-logo {
+    font-family: var(--serif); font-weight: 500; font-size: 18px;
+    letter-spacing: 0.04em; color: var(--text); text-decoration: none;
+  }
+  .nav-logo span { color: var(--cta); }
+  .nav-links { display: flex; gap: 40px; list-style: none; }
+  .nav-links a {
+    font-size: 13px; font-weight: 400; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--text-muted); text-decoration: none;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--text); }
 
-    .logo-domain {
-      font-family: 'DM Mono', monospace;
-      font-size: 11px;
-      font-weight: 300;
-      color: var(--muted);
-      margin-left: 10px;
-      letter-spacing: 0.02em;
-    }
+  /* HERO */
+  #hero {
+    min-height: 100vh; display: flex; flex-direction: column;
+    justify-content: center; padding-top: 120px; padding-bottom: 120px;
+    position: relative; overflow: hidden;
+  }
+  #hero::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse 60% 60% at 75% 50%, oklch(94% 0.003 240 / 0.6) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; position: relative; z-index: 1; }
+  .hero-label { font-size: 12px; font-weight: 400; letter-spacing: 0.18em; text-transform: uppercase; color: var(--cta); margin-bottom: 32px; }
+  .hero-line { font-family: var(--serif); font-weight: 300; font-size: clamp(80px, 11vw, 160px); line-height: 0.92; letter-spacing: -0.03em; display: block; }
+  .hero-line--accent { color: var(--cta); }
+  .hero-description { font-size: 16px; font-weight: 300; line-height: 1.75; color: var(--text-muted); max-width: 460px; }
+  .hero-cta-group { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .hero-canvas-wrap { display: flex; align-items: center; justify-content: center; }
+  #hero-canvas { width: 100%; max-width: 480px; display: block; }
 
-    nav a {
-      font-size: 12px;
-      font-weight: 300;
-      color: var(--muted);
-      text-decoration: none;
-      letter-spacing: 0.04em;
-    }
+  /* SECTIONS */
+  section { padding: 120px 0; }
+  .section-label {
+    font-size: 11px; font-weight: 500; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--cta); margin-bottom: 48px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .section-label::after { content: ''; display: block; height: 1px; width: 48px; background: var(--cta); opacity: 0.5; }
+  .section-title { font-family: var(--serif); font-weight: 300; font-size: clamp(36px, 4.5vw, 64px); line-height: 1.05; letter-spacing: -0.015em; color: var(--text); margin-bottom: 24px; }
 
-    nav a:hover { color: var(--fg); }
+  /* WHAT WE DO */
+  #what { background: var(--bg-2); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+  .what-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start; }
+  .what-body { font-size: 17px; font-weight: 300; line-height: 1.8; color: var(--text-muted); margin-top: 32px; }
+  .what-right { padding-top: 12px; }
+  .stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+  .stat-card { background: var(--bg-3); padding: 36px 32px; border: 1px solid var(--rule); }
+  .stat-num { font-family: var(--serif); font-size: 52px; font-weight: 300; line-height: 1; letter-spacing: -0.02em; color: var(--text); margin-bottom: 8px; }
+  .stat-num span { color: var(--cta); }
+  .stat-desc { font-size: 13px; font-weight: 400; color: var(--text-dim); line-height: 1.5; text-transform: uppercase; letter-spacing: 0.06em; }
 
-    /* Hero — centred, full height */
-    main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 4rem 2rem;
-    }
+  /* THE MODEL */
+  .model-intro { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; margin-bottom: 80px; align-items: end; }
+  .model-tagline { font-family: var(--serif); font-size: clamp(28px, 3vw, 44px); font-weight: 300; line-height: 1.2; color: var(--text-muted); font-style: italic; }
+  .pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+  .pillar { background: var(--bg-2); border: 1px solid var(--rule); padding: 48px 40px 52px; position: relative; transition: background 0.3s; }
+  .pillar:hover { background: var(--bg-3); }
+  .pillar-num { font-family: var(--serif); font-size: 13px; font-weight: 400; color: var(--cta); letter-spacing: 0.1em; margin-bottom: 32px; display: block; }
+  .pillar-title { font-family: var(--serif); font-size: 28px; font-weight: 400; line-height: 1.1; color: var(--text); margin-bottom: 20px; letter-spacing: -0.01em; }
+  .pillar-body { font-size: 14px; font-weight: 300; line-height: 1.75; color: var(--text-dim); }
+  .pillar-accent { position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: var(--cta); transform: scaleX(0); transform-origin: left; transition: transform 0.4s var(--easing); }
+  .pillar:hover .pillar-accent { transform: scaleX(1); }
 
-    .eyebrow {
-      font-size: 10px;
-      font-weight: 300;
-      letter-spacing: 0.18em;
-      color: var(--muted);
-      text-transform: uppercase;
-      margin-bottom: 2rem;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+  /* APPROACH */
+  #approach { background: var(--bg-2); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+  .approach-header { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: end; margin-bottom: 80px; }
+  .approach-desc { font-size: 16px; font-weight: 300; line-height: 1.8; color: var(--text-muted); padding-top: 40px; }
+  .steps { display: flex; flex-direction: column; }
+  .step { display: grid; grid-template-columns: 72px 1fr; gap: 32px; padding: 40px 0; border-bottom: 1px solid var(--rule); align-items: start; }
+  .step:first-child { border-top: 1px solid var(--rule); }
+  .step-num { font-family: var(--serif); font-size: 13px; font-weight: 400; color: var(--cta); letter-spacing: 0.08em; padding-top: 4px; }
+  .step-title { font-family: var(--serif); font-size: 24px; font-weight: 400; color: var(--text); margin-bottom: 10px; letter-spacing: -0.01em; }
+  .step-body { font-size: 14px; font-weight: 300; line-height: 1.75; color: var(--text-dim); }
 
-    .eyebrow::before,
-    .eyebrow::after {
-      content: '';
-      display: block;
-      width: 32px;
-      height: 0.5px;
-      background: var(--muted);
-    }
+  /* CTA BAND */
+  #cta-band { background: var(--cta); padding: 100px 0; text-align: center; }
+  .cta-band-title { font-family: var(--serif); font-size: clamp(40px, 5vw, 72px); font-weight: 300; line-height: 1.05; letter-spacing: -0.02em; color: var(--cta-text); margin-bottom: 16px; }
+  .cta-band-sub { font-size: 15px; font-weight: 300; color: oklch(90% 0.02 18); margin-bottom: 48px; letter-spacing: 0.02em; }
 
-    h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(42px, 6vw, 72px);
-      font-weight: 400;
-      line-height: 1.1;
-      letter-spacing: -1.5px;
-      margin-bottom: 2rem;
-      max-width: 640px;
-    }
+  /* BUTTONS */
+  .btn-primary { display: inline-block; background: var(--cta); color: var(--cta-text); padding: 16px 36px; font-family: var(--sans); font-size: 13px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; text-decoration: none; transition: background 0.2s, transform 0.2s var(--easing); }
+  .btn-primary:hover { background: var(--cta-hover); transform: translateY(-2px); }
+  .btn-ghost { display: inline-block; border: 1px solid var(--rule); color: var(--text-muted); padding: 16px 36px; font-family: var(--sans); font-size: 13px; font-weight: 400; letter-spacing: 0.1em; text-transform: uppercase; text-decoration: none; transition: border-color 0.2s, color 0.2s, transform 0.2s var(--easing); }
+  .btn-ghost:hover { border-color: var(--text-muted); color: var(--text); transform: translateY(-2px); }
+  .btn-inverse { display: inline-block; background: oklch(95% 0.005 60); color: var(--cta); padding: 18px 44px; font-family: var(--sans); font-size: 13px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; text-decoration: none; transition: background 0.2s, transform 0.2s var(--easing); }
+  .btn-inverse:hover { background: white; transform: translateY(-2px); }
 
-    h1 em {
-      font-style: italic;
-      color: var(--muted);
-    }
+  /* FOOTER */
+  footer { padding: 56px 0; border-top: 1px solid var(--rule); }
+  .footer-inner { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+  .footer-logo { font-family: var(--serif); font-size: 16px; font-weight: 500; color: var(--text-muted); letter-spacing: 0.04em; text-decoration: none; }
+  .footer-logo span { color: var(--cta); }
+  .footer-copy { font-size: 12px; color: var(--text-dim); letter-spacing: 0.04em; }
+  .footer-links { display: flex; gap: 28px; list-style: none; }
+  .footer-links a { font-size: 12px; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); text-decoration: none; transition: color 0.2s; }
+  .footer-links a:hover { color: var(--text-muted); }
 
-    .tagline {
-      font-size: 13px;
-      font-weight: 300;
-      color: var(--muted);
-      line-height: 1.85;
-      letter-spacing: 0.01em;
-      max-width: 420px;
-      margin-bottom: 3rem;
-    }
-
-    .cta-group {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .btn-primary {
-      font-family: 'DM Mono', monospace;
-      font-size: 11px;
-      font-weight: 400;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      padding: 13px 32px;
-      background: var(--fg);
-      color: var(--bg);
-      border: none;
-      cursor: pointer;
-      text-decoration: none;
-      display: inline-block;
-      transition: opacity 0.15s;
-    }
-
-    .btn-primary:hover { opacity: 0.8; }
-
-    .btn-ghost {
-      font-family: 'DM Mono', monospace;
-      font-size: 11px;
-      font-weight: 300;
-      letter-spacing: 0.06em;
-      padding: 13px 24px;
-      border: 0.5px solid var(--border);
-      background: transparent;
-      color: var(--muted);
-      cursor: pointer;
-      text-decoration: none;
-      display: inline-block;
-      transition: color 0.15s, border-color 0.15s;
-    }
-
-    .btn-ghost:hover {
-      color: var(--fg);
-      border-color: rgba(26, 26, 24, 0.35);
-    }
-
-    /* Footer */
-    footer {
-      padding: 1.75rem 2.5rem;
-      border-top: 0.5px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .footer-copy {
-      font-size: 11px;
-      font-weight: 300;
-      color: var(--muted);
-      letter-spacing: 0.04em;
-    }
-
-    .footer-status {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 11px;
-      font-weight: 300;
-      color: var(--muted);
-      letter-spacing: 0.04em;
-    }
-
-    .status-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: #4caf72;
-      animation: pulse 2.5s ease-in-out infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
-    }
-  </style>
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    .container { padding: 0 24px; }
+    .what-grid, .model-intro, .approach-header, .hero-grid { grid-template-columns: 1fr; gap: 40px; }
+    .pillars { grid-template-columns: 1fr; }
+    .stat-row { grid-template-columns: 1fr 1fr; }
+    .hero-canvas-wrap { display: none; }
+    .footer-inner { flex-direction: column; align-items: flex-start; gap: 16px; }
+  }
+</style>
 </head>
 <body>
 
-  <header>
-    <div class="logo">
-      Capital H<span class="logo-domain">capitalh.ai</span>
+<nav id="nav">
+  <div class="container">
+    <a href="#" class="nav-logo">Capital <span>H</span></a>
+    <ul class="nav-links">
+      <li><a href="#what">What We Do</a></li>
+      <li><a href="#model">The Model</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </div>
+</nav>
+
+<section id="hero">
+  <div class="container">
+    <div class="hero-grid">
+      <div>
+        <p class="hero-label reveal">Applied AI Platform</p>
+        <h1 class="reveal" style="transition-delay:0.1s">
+          <span class="hero-line">AI that builds</span>
+          <span class="hero-line hero-line--accent">enterprise value.</span>
+        </h1>
+        <div class="reveal" style="transition-delay:0.22s;margin-top:44px">
+          <p class="hero-description">Capital H designs and deploys custom AI systems across your operations — turning workflows, reporting, and decision-making into compounding sources of value.</p>
+          <div class="hero-cta-group" style="margin-top:36px">
+            <a href="#contact" class="btn-primary">Get in Touch</a>
+            <a href="#model" class="btn-ghost">Our Model</a>
+          </div>
+        </div>
+      </div>
+      <div class="hero-canvas-wrap reveal" style="transition-delay:0.3s">
+        <canvas id="hero-canvas"></canvas>
+      </div>
     </div>
-    <nav>
-      <a href="mailto:hello@capitalh.ai">hello@capitalh.ai</a>
-    </nav>
-  </header>
+  </div>
+</section>
 
-  <main>
-    <div class="eyebrow">Applied AI Platform</div>
+<hr class="rule" />
 
-    <h1>AI that <em>operates,</em><br>not just assists.</h1>
-
-    <p class="tagline">
-      An operator-led applied AI platform that builds AI systems,<br>
-      develops implementation playbooks, and uses them<br>
-      to create value across companies.
-    </p>
-
-    <div class="cta-group">
-      <a href="mailto:hello@capitalh.ai" class="btn-primary">Get in touch</a>
-      <a href="mailto:hello@capitalh.ai" class="btn-ghost">Learn more ↗</a>
+<section id="what">
+  <div class="container">
+    <div class="what-grid">
+      <div class="reveal">
+        <div class="section-label">What We Do</div>
+        <h2 class="section-title">Practical AI,<br><span style="color:var(--cta)">not theory.</span></h2>
+        <p class="what-body">Rather than offering generic AI tools, we focus on practical implementation — designing and deploying AI systems tailored to how your business actually operates. We codify what works into repeatable playbooks that compound over time.</p>
+      </div>
+      <div class="what-right reveal" style="transition-delay:0.15s">
+        <div class="stat-row">
+          <div class="stat-card"><div class="stat-num">AI<span>.</span></div><div class="stat-desc">Infrastructure &<br>Workflow Design</div></div>
+          <div class="stat-card"><div class="stat-num">Ops<span>.</span></div><div class="stat-desc">Operating System<br>Implementation</div></div>
+          <div class="stat-card"><div class="stat-num">BD<span>.</span></div><div class="stat-desc">Business Dev &<br>Solutioning</div></div>
+          <div class="stat-card"><div class="stat-num">VC<span>.</span></div><div class="stat-desc">Venture Building<br>& Investment</div></div>
+        </div>
+      </div>
     </div>
-  </main>
+  </div>
+</section>
 
-  <footer>
-    <span class="footer-copy">© 2025 Capital H</span>
-    <span class="footer-status">
-      <span class="status-dot"></span>
-      Launching soon
-    </span>
-  </footer>
+<section id="model">
+  <div class="container">
+    <div class="model-intro">
+      <div class="reveal">
+        <div class="section-label">The Model</div>
+        <h2 class="section-title">Three levers.<br><span style="color:var(--cta)">One thesis.</span></h2>
+      </div>
+      <p class="model-tagline reveal" style="transition-delay:0.1s">"Operational improvement through AI systems is the central investment thesis."</p>
+    </div>
+    <div class="pillars">
+      <div class="pillar reveal">
+        <span class="pillar-num">01</span>
+        <h3 class="pillar-title">AI Infrastructure & Workflows</h3>
+        <p class="pillar-body">We design and implement custom AI infrastructure tailored to your business — spanning finance, operations, reporting, and decision-making. Not off-the-shelf. Built for how you actually work.</p>
+        <div class="pillar-accent"></div>
+      </div>
+      <div class="pillar reveal" style="transition-delay:0.1s">
+        <span class="pillar-num">02</span>
+        <h3 class="pillar-title">Implementation Playbooks</h3>
+        <p class="pillar-body">We don't just deploy and leave. We codify every engagement into repeatable operating playbooks — proprietary, compounding assets that can be applied across companies and industries.</p>
+        <div class="pillar-accent"></div>
+      </div>
+      <div class="pillar reveal" style="transition-delay:0.2s">
+        <span class="pillar-num">03</span>
+        <h3 class="pillar-title">Venture Platform</h3>
+        <p class="pillar-body">Capital H is being built as a venture and investment vehicle — partnering with AI operators to deploy playbooks across portfolio companies and using applied AI as the primary value-creation lever.</p>
+        <div class="pillar-accent"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="approach">
+  <div class="container">
+    <div class="approach-header">
+      <div class="reveal">
+        <div class="section-label">How We Work</div>
+        <h2 class="section-title">Operator-led.<br><span style="color:var(--cta)">Implementation-first.</span></h2>
+      </div>
+      <p class="approach-desc reveal" style="transition-delay:0.1s">We work directly with AI companies and developers, bridging technical capability with operational reality. Our operating team handles business development and solutioning — ensuring the right systems are built for the right problems.</p>
+    </div>
+    <div class="steps">
+      <div class="step reveal"><span class="step-num">01</span><div><h3 class="step-title">Diagnose the Operating Model</h3><p class="step-body">We map your current workflows, reporting structures, and decision-making processes to identify where AI can create the highest-leverage impact.</p></div></div>
+      <div class="step reveal" style="transition-delay:0.08s"><span class="step-num">02</span><div><h3 class="step-title">Design & Build the System</h3><p class="step-body">Custom AI infrastructure — not templates. We partner with developers and AI companies to engineer systems that fit your specific operational reality.</p></div></div>
+      <div class="step reveal" style="transition-delay:0.16s"><span class="step-num">03</span><div><h3 class="step-title">Deploy & Codify</h3><p class="step-body">We implement, iterate, and codify successful approaches into reusable playbooks — creating durable intellectual property from every engagement.</p></div></div>
+      <div class="step reveal" style="transition-delay:0.24s"><span class="step-num">04</span><div><h3 class="step-title">Scale Across the Platform</h3><p class="step-body">Proven playbooks are deployed across portfolio companies and new engagements — accelerating time-to-value and compounding operational improvements over time.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="cta-band">
+  <div class="container">
+    <h2 class="cta-band-title reveal">Ready to build<br><span style="color:oklch(95% 0.005 60);font-style:italic">the operating system</span><br>for your business?</h2>
+    <p class="cta-band-sub reveal" style="transition-delay:0.1s">Let's talk about what AI can do for your operations.</p>
+    <a href="mailto:hello@capitalh.ai" class="btn-inverse reveal" style="transition-delay:0.2s" id="contact">Get in Touch</a>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <a href="#" class="footer-logo">Capital <span>H</span></a>
+      <span class="footer-copy">© 2026 Capital H. All rights reserved.</span>
+      <ul class="footer-links">
+        <li><a href="#what">About</a></li>
+        <li><a href="#model">Model</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 40));
+  document.querySelectorAll('#hero .reveal').forEach(el => el.classList.add('visible'));
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal:not(#hero .reveal)').forEach(el => observer.observe(el));
+</script>
+<script src="animation.js"></script>
 
 </body>
 </html>
