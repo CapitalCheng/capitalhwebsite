@@ -1,204 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Capital H — AI Operator & Venture Studio</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
-
-<style>
-  :root {
-    --bg:          oklch(98% 0.002 240);
-    --bg-2:        oklch(96% 0.003 240);
-    --bg-3:        oklch(93% 0.003 240);
-    --text:        oklch(12% 0.005 240);
-    --text-muted:  oklch(42% 0.006 240);
-    --text-dim:    oklch(60% 0.005 240);
-    --cta:         oklch(40% 0.130 18);
-    --cta-hover:   oklch(46% 0.140 18);
-    --cta-text:    oklch(97% 0.005 60);
-    --rule:        oklch(88% 0.004 240);
-    --serif:       'Cormorant Garamond', Georgia, serif;
-    --sans:        'DM Sans', system-ui, sans-serif;
-    --easing:      cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--sans);
-    font-weight: 300;
-    font-size: 16px;
-    line-height: 1.6;
-    -webkit-font-smoothing: antialiased;
-    overflow-x: hidden;
-  }
-
-  .reveal {
-    opacity: 0;
-    transform: translateY(24px);
-    transition: opacity 0.9s var(--easing), transform 0.9s var(--easing);
-  }
-  .reveal.visible { opacity: 1; transform: translateY(0); }
-
-  .container { max-width: 1200px; margin: 0 auto; padding: 0 48px; }
-  hr.rule { border: none; border-top: 1px solid var(--rule); }
-
-  /* NAV */
-  nav {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-    padding: 28px 0;
-    transition: background 0.4s ease, padding 0.4s ease;
-  }
-  nav.scrolled {
-    background: oklch(98% 0.002 240 / 0.94);
-    backdrop-filter: blur(12px);
-    padding: 18px 0;
-    border-bottom: 1px solid var(--rule);
-  }
-  nav .container { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-  .nav-logo {
-    font-family: var(--serif); font-weight: 500; font-size: 18px;
-    letter-spacing: 0.04em; color: var(--text); text-decoration: none;
-    white-space: nowrap; flex-shrink: 0;
-  }
-  .nav-logo span { color: var(--cta); }
-  .nav-links { display: flex; gap: 40px; list-style: none; flex-wrap: nowrap; }
-  .nav-links a {
-    font-size: 13px; font-weight: 400; letter-spacing: 0.08em;
-    text-transform: uppercase; color: var(--text-muted); text-decoration: none;
-    transition: color 0.2s; white-space: nowrap;
-  }
-  .nav-links a:hover { color: var(--text); }
-
-  /* HERO */
-  #hero {
-    min-height: 100vh; display: flex; flex-direction: column;
-    justify-content: center; padding-top: 120px; padding-bottom: 120px;
-    position: relative; overflow: hidden;
-  }
-  #hero::before {
-    content: ''; position: absolute; inset: 0;
-    background: radial-gradient(ellipse 60% 60% at 75% 50%, oklch(94% 0.003 240 / 0.6) 0%, transparent 70%);
-    pointer-events: none;
-  }
-  .hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; position: relative; z-index: 1; }
-  .hero-label { font-size: 12px; font-weight: 400; letter-spacing: 0.18em; text-transform: uppercase; color: var(--cta); margin-bottom: 32px; }
-  .hero-line { font-family: var(--serif); font-weight: 300; font-size: clamp(80px, 11vw, 160px); line-height: 0.92; letter-spacing: -0.03em; display: block; }
-  .hero-line--accent { color: var(--cta); }
-  .hero-description { font-size: 16px; font-weight: 300; line-height: 1.75; color: var(--text-muted); max-width: 460px; }
-  .hero-cta-group { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
-  .hero-canvas-wrap { display: flex; align-items: center; justify-content: center; }
-  #hero-canvas { width: 100%; max-width: 480px; display: block; }
-
-  /* SECTIONS */
-  section { padding: 120px 0; }
-  .section-label {
-    font-size: 11px; font-weight: 500; letter-spacing: 0.2em;
-    text-transform: uppercase; color: var(--cta); margin-bottom: 48px;
-    display: flex; align-items: center; gap: 16px;
-  }
-  .section-label::after { content: ''; display: block; height: 1px; width: 48px; background: var(--cta); opacity: 0.5; }
-  .section-title { font-family: var(--serif); font-weight: 300; font-size: clamp(36px, 4.5vw, 64px); line-height: 1.05; letter-spacing: -0.015em; color: var(--text); margin-bottom: 24px; }
-
-  /* WHAT WE DO */
-  #what { background: var(--bg-2); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
-  .what-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start; }
-  .what-body { font-size: 17px; font-weight: 300; line-height: 1.8; color: var(--text-muted); margin-top: 32px; }
-  .what-right { padding-top: 12px; }
-  .stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; position: relative; }
-  .stat-card { background: var(--bg-3); padding: 36px 32px; border: 1px solid var(--rule); overflow: hidden; }
-  .stat-num { font-family: var(--serif); font-size: 52px; font-weight: 300; line-height: 1; letter-spacing: -0.02em; color: var(--text); margin-bottom: 8px; }
-  /* span hidden by growthmark.js at runtime — canvas owns the full stop */
-  .stat-num span { color: var(--cta); }
-  .stat-desc { font-size: 13px; font-weight: 400; color: var(--text-dim); line-height: 1.5; text-transform: uppercase; letter-spacing: 0.06em; }
-
-  /* THE MODEL */
-  .model-intro { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; margin-bottom: 80px; align-items: end; }
-  .model-tagline { font-family: var(--serif); font-size: clamp(28px, 3vw, 44px); font-weight: 300; line-height: 1.2; color: var(--text-muted); font-style: italic; }
-  .pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
-  .pillar { background: var(--bg-2); border: 1px solid var(--rule); padding: 48px 40px 52px; position: relative; transition: background 0.3s; }
-  .pillar:hover { background: var(--bg-3); }
-  .pillar-num { font-family: var(--serif); font-size: 13px; font-weight: 400; color: var(--cta); letter-spacing: 0.1em; margin-bottom: 32px; display: block; }
-  .pillar-title { font-family: var(--serif); font-size: 28px; font-weight: 400; line-height: 1.1; color: var(--text); margin-bottom: 20px; letter-spacing: -0.01em; }
-  .pillar-body { font-size: 14px; font-weight: 300; line-height: 1.75; color: var(--text-dim); }
-  .pillar-accent { position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: var(--cta); transform: scaleX(0); transform-origin: left; transition: transform 0.4s var(--easing); }
-  .pillar:hover .pillar-accent { transform: scaleX(1); }
-
-  /* APPROACH */
-  #approach { background: var(--bg-2); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
-  .approach-header { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: end; margin-bottom: 80px; }
-  .approach-desc { font-size: 16px; font-weight: 300; line-height: 1.8; color: var(--text-muted); padding-top: 40px; }
-  .steps { display: flex; flex-direction: column; }
-  .step { display: grid; grid-template-columns: 72px 1fr; gap: 32px; padding: 40px 0; border-bottom: 1px solid var(--rule); align-items: start; }
-  .step:first-child { border-top: 1px solid var(--rule); }
-  .step-num { font-family: var(--serif); font-size: 13px; font-weight: 400; color: var(--cta); letter-spacing: 0.08em; padding-top: 4px; }
-  .step-title { font-family: var(--serif); font-size: 24px; font-weight: 400; color: var(--text); margin-bottom: 10px; letter-spacing: -0.01em; }
-  .step-body { font-size: 14px; font-weight: 300; line-height: 1.75; color: var(--text-dim); }
-
-  /* CTA BAND */
-  #cta-band { background: var(--cta); padding: 100px 0; text-align: center; }
-  .cta-band-title { font-family: var(--serif); font-size: clamp(40px, 5vw, 72px); font-weight: 300; line-height: 1.05; letter-spacing: -0.02em; color: var(--cta-text); margin-bottom: 16px; }
-  .cta-band-sub { font-size: 15px; font-weight: 300; color: oklch(90% 0.02 18); margin-bottom: 48px; letter-spacing: 0.02em; }
-
-  /* BUTTONS */
-  .btn-primary { display: inline-block; background: var(--cta); color: var(--cta-text); padding: 16px 36px; font-family: var(--sans); font-size: 13px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; text-decoration: none; transition: background 0.2s, transform 0.2s var(--easing); }
-  .btn-primary:hover { background: var(--cta-hover); transform: translateY(-2px); }
-  .btn-ghost { display: inline-block; border: 1px solid var(--rule); color: var(--text-muted); padding: 16px 36px; font-family: var(--sans); font-size: 13px; font-weight: 400; letter-spacing: 0.1em; text-transform: uppercase; text-decoration: none; transition: border-color 0.2s, color 0.2s, transform 0.2s var(--easing); }
-  .btn-ghost:hover { border-color: var(--text-muted); color: var(--text); transform: translateY(-2px); }
-  .btn-inverse { display: inline-block; background: oklch(95% 0.005 60); color: var(--cta); padding: 18px 44px; font-family: var(--sans); font-size: 13px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; text-decoration: none; transition: background 0.2s, transform 0.2s var(--easing); }
-  .btn-inverse:hover { background: white; transform: translateY(-2px); }
-
-  /* FOOTER */
-  footer { padding: 56px 0; border-top: 1px solid var(--rule); }
-  .footer-inner { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
-  .footer-logo { font-family: var(--serif); font-size: 16px; font-weight: 500; color: var(--text-muted); letter-spacing: 0.04em; text-decoration: none; }
-  .footer-logo span { color: var(--cta); }
-  .footer-copy { font-size: 12px; color: var(--text-dim); letter-spacing: 0.04em; }
-  .footer-links { display: flex; gap: 28px; list-style: none; }
-  .footer-links a { font-size: 12px; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); text-decoration: none; transition: color 0.2s; }
-  .footer-links a:hover { color: var(--text-muted); }
-
-  /* ── RESPONSIVE ─────────────────────────────────────────────── */
-  @media (max-width: 900px) {
-    .container { padding: 0 24px; }
-    section { padding: 80px 0; }
-    #cta-band { padding: 72px 0; }
-
-    /* Layouts */
-    .what-grid, .model-intro, .approach-header, .hero-grid { grid-template-columns: 1fr; gap: 40px; }
-    .pillars { grid-template-columns: 1fr; }
-    .hero-canvas-wrap { display: none; }
-    .footer-inner { flex-direction: column; align-items: flex-start; gap: 16px; }
-    .footer-copy { font-size: 11px; }
-
-    /* Nav — tighten so it fits on narrow screens */
-    nav { padding: 20px 0; }
-    .nav-links { gap: 20px; }
-    .nav-links a { font-size: 11px; letter-spacing: 0.05em; }
-
-    /* Stat tiles — scale font and padding so they fit in half-width columns */
-    .stat-row { grid-template-columns: 1fr 1fr; }
-    .stat-card { padding: 20px 16px; }
-    .stat-num { font-size: clamp(28px, 7vw, 44px); margin-bottom: 6px; }
-    .stat-desc { font-size: 10px; letter-spacing: 0.04em; }
-  }
-
-  @media (max-width: 480px) {
-    .container { padding: 0 16px; }
-    .nav-logo { font-size: 15px; }
-    .nav-links { gap: 10px; }
-    .nav-links a { font-size: 10px; }
-    .stat-card { padding: 16px 12px; }
-    .stat-num { font-size: clamp(24px, 6vw, 36px); }
-    .stat-desc { font-size: 9px; }
-    .step { grid-template-columns: 48px 1fr; gap: 16px; }
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Capital H — AI Operator & Venture Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
 
@@ -331,19 +140,10 @@
   </div>
 </footer>
 
-<script>
-  const nav = document.getElementById('nav');
-  window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 40));
-  document.querySelectorAll('#hero .reveal').forEach(el => el.classList.add('visible'));
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
-  }, { threshold: 0.12 });
-  document.querySelectorAll('.reveal:not(#hero .reveal)').forEach(el => observer.observe(el));
-</script>
-
-<!-- Animations — load after DOM is ready -->
-<script src="northstar.js"></script>
-<script src="growthmark.js"></script>
+<!-- Scripts — load in order: interactions first, then animations -->
+<script src="js/main.js"></script>
+<script src="js/northstar.js"></script>
+<script src="js/growthmark.js"></script>
 
 </body>
 </html>
