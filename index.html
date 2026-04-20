@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Capital H</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #fafaf8;
+      --fg: #1a1a18;
+      --muted: #6b6b67;
+      --border: rgba(26, 26, 24, 0.12);
+      --accent: #1a1a18;
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: 'DM Mono', monospace;
+      font-weight: 300;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    header {
+      padding: 2rem 2.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 0.5px solid var(--border);
+    }
+
+    .logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      font-weight: 400;
+      letter-spacing: -0.3px;
+    }
+
+    .logo-domain {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      font-weight: 300;
+      color: var(--muted);
+      margin-left: 10px;
+      letter-spacing: 0.02em;
+    }
+
+    nav a {
+      font-size: 12px;
+      font-weight: 300;
+      color: var(--muted);
+      text-decoration: none;
+      letter-spacing: 0.04em;
+    }
+
+    nav a:hover { color: var(--fg); }
+
+    /* Hero — centred, full height */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 4rem 2rem;
+    }
+
+    .eyebrow {
+      font-size: 10px;
+      font-weight: 300;
+      letter-spacing: 0.18em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .eyebrow::before,
+    .eyebrow::after {
+      content: '';
+      display: block;
+      width: 32px;
+      height: 0.5px;
+      background: var(--muted);
+    }
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(42px, 6vw, 72px);
+      font-weight: 400;
+      line-height: 1.1;
+      letter-spacing: -1.5px;
+      margin-bottom: 2rem;
+      max-width: 640px;
+    }
+
+    h1 em {
+      font-style: italic;
+      color: var(--muted);
+    }
+
+    .tagline {
+      font-size: 13px;
+      font-weight: 300;
+      color: var(--muted);
+      line-height: 1.85;
+      letter-spacing: 0.01em;
+      max-width: 420px;
+      margin-bottom: 3rem;
+    }
+
+    .cta-group {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-primary {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 13px 32px;
+      background: var(--fg);
+      color: var(--bg);
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: opacity 0.15s;
+    }
+
+    .btn-primary:hover { opacity: 0.8; }
+
+    .btn-ghost {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 0.06em;
+      padding: 13px 24px;
+      border: 0.5px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    .btn-ghost:hover {
+      color: var(--fg);
+      border-color: rgba(26, 26, 24, 0.35);
+    }
+
+    /* Footer */
+    footer {
+      padding: 1.75rem 2.5rem;
+      border-top: 0.5px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .footer-copy {
+      font-size: 11px;
+      font-weight: 300;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+    }
+
+    .footer-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 300;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #4caf72;
+      animation: pulse 2.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">
+      Capital H<span class="logo-domain">capitalh.ai</span>
+    </div>
+    <nav>
+      <a href="mailto:hello@capitalh.ai">hello@capitalh.ai</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="eyebrow">Applied AI Platform</div>
+
+    <h1>AI that <em>operates,</em><br>not just assists.</h1>
+
+    <p class="tagline">
+      An operator-led applied AI platform that builds AI systems,<br>
+      develops implementation playbooks, and uses them<br>
+      to create value across companies.
+    </p>
+
+    <div class="cta-group">
+      <a href="mailto:hello@capitalh.ai" class="btn-primary">Get in touch</a>
+      <a href="mailto:hello@capitalh.ai" class="btn-ghost">Learn more ↗</a>
+    </div>
+  </main>
+
+  <footer>
+    <span class="footer-copy">© 2025 Capital H</span>
+    <span class="footer-status">
+      <span class="status-dot"></span>
+      Launching soon
+    </span>
+  </footer>
+
+</body>
+</html>
