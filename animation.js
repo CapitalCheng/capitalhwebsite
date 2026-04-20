@@ -172,8 +172,6 @@
     gT += dt;
 
     ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = 'oklch(98% 0.002 240)';
-    ctx.fillRect(0, 0, W, H);
 
     dots.forEach(d => {
       d.age  += dt;
