@@ -1,9 +1,13 @@
 /**
- * Capital H — Hero Animation
- * Chaos-to-clarity: dots spawn in chaos (left-biased),
- * converge onto a J-curve, and accelerate up the rise.
+ * Capital H — Northstar Animation
+ * Chaos-to-clarity: dots converge onto a J-curve and accelerate up the rise.
  *
- * Expects <canvas id="hero-canvas"> in the DOM.
+ * Optimisations:
+ *  - Pauses via IntersectionObserver when canvas leaves the viewport
+ *  - Throttles to 30fps on low-end devices (hardwareConcurrency <= 4)
+ *
+ * Expects: <canvas id="hero-canvas">
+ * Load via: <script src="js/northstar.js"></script>
  */
 (function () {
   const canvas = document.getElementById('hero-canvas');
@@ -18,12 +22,23 @@
   canvas.style.height = H + 'px';
   ctx.scale(DPR, DPR);
 
-  // ── Colours ──────────────────────────────────────────────────
-  const CTA       = [148, 52, 36];   // brand maroon
-  const CHAOS_COL = [105, 103, 101]; // dark gray
+  // ── Performance ───────────────────────────────────────────────
+  const LOW_END   = (navigator.hardwareConcurrency || 8) <= 4;
+  const FRAME_MS  = LOW_END ? 1000 / 30 : 0; // throttle to 30fps if low-end
+  let visible     = true;
+  let lastFrameTs = 0;
 
-  // ── Bezier J-curve ───────────────────────────────────────────
-  // Flat section left → smooth elbow → sharp vertical rise right
+  // Pause when hero scrolls out of view
+  const io = new IntersectionObserver(entries => {
+    visible = entries[0].isIntersecting;
+  }, { threshold: 0 });
+  io.observe(canvas);
+
+  // ── Colours ───────────────────────────────────────────────────
+  const CTA       = [148, 52, 36];
+  const CHAOS_COL = [105, 103, 101];
+
+  // ── Bezier J-curve ────────────────────────────────────────────
   const P0 = { x: 82,  y: 338 };
   const P1 = { x: 390, y: 344 };
   const P2 = { x: 516, y: 328 };
@@ -37,7 +52,6 @@
     };
   }
 
-  // Arc-length reparameterisation so dots move at perceptual even speed
   const RAW = 800;
   const rawPts = Array.from({ length: RAW + 1 }, (_, i) => bezier(i / RAW));
   const arcLen = [0];
@@ -62,7 +76,6 @@
     };
   }
 
-  // Dense LUT for nearest-point search
   const NL = 500;
   const lut = Array.from({ length: NL + 1 }, (_, i) => curvePt(i / NL));
 
@@ -75,26 +88,6 @@
     return { x: dx / len, y: dy / len };
   }
 
-  // ── Weighted snap distribution ────────────────────────────────
-  // ~85% of dots land in the first 25% of the curve (bottom of J)
-  function weightedSnapS() {
-    return Math.min(-Math.log(1 - Math.random() * 0.985) * 0.11, 0.88);
-  }
-
-  function snapPoint(targetS) {
-    const i = Math.round(clamp(targetS, 0, 1) * NL);
-    return lut[clamp(i, 0, NL)];
-  }
-
-  // ── Slide speed ───────────────────────────────────────────────
-  // Crawls on flat, rockets on the rise
-  function slideSpeed(s) {
-    if (s < 0.55) return 0.08 + s * 0.12;
-    const r = (s - 0.55) / 0.45;
-    return 0.18 + r * r * 2.2;
-  }
-
-  // ── Helpers ───────────────────────────────────────────────────
   function clamp(v, a, b) { return Math.min(b, Math.max(a, v)); }
 
   function lerpCol(a, b, t) {
@@ -106,11 +99,24 @@
     ];
   }
 
-  // ── Dot states ────────────────────────────────────────────────
+  function weightedSnapS() {
+    return Math.min(-Math.log(1 - Math.random() * 0.985) * 0.11, 0.88);
+  }
+
+  function snapPoint(targetS) {
+    const i = Math.round(clamp(targetS, 0, 1) * NL);
+    return lut[clamp(i, 0, NL)];
+  }
+
+  function slideSpeed(s) {
+    if (s < 0.55) return 0.08 + s * 0.12;
+    const r = (s - 0.55) / 0.45;
+    return 0.18 + r * r * 2.2;
+  }
+
   const CHAOS = 0, SEEKING = 1, ONPATH = 2;
 
   function respawn(d) {
-    // 70% left half, 18% bottom strip, 12% anywhere
     const r = Math.random();
     if (r < 0.70) {
       d.x = 82  + Math.random() * 240;
@@ -122,50 +128,51 @@
       d.x = 90  + Math.random() * 500;
       d.y = 55  + Math.random() * 310;
     }
-
     const angle = Math.random() * Math.PI * 2;
     const spd   = 1.6 + Math.random() * 2.8;
     d.vx = Math.cos(angle) * spd;
     d.vy = Math.sin(angle) * spd;
-
     d.r         = 1.5 + Math.random() * 2.0;
     d.baseAlpha = 0.55 + Math.random() * 0.38;
     d.state     = CHAOS;
     d.order     = 0;
     d.s         = 0;
     d.life      = 0;
-    d.chaosTime = 0.05 + Math.random() * 0.35; // short chaos — seeks quickly
+    d.chaosTime = 0.05 + Math.random() * 0.35;
     d.pull      = 0.12 + Math.random() * 0.10;
     d.phase     = Math.random() * Math.PI * 2;
     d.snapS     = weightedSnapS();
     d.snapPt    = snapPoint(d.snapS);
   }
 
-  // ── Initialise dots ───────────────────────────────────────────
   const NDOTS = 110;
   const dots  = Array.from({ length: NDOTS }, (_, i) => {
     const d = {};
     respawn(d);
-
-    // Pre-place ~40% of dots already on the curve so action starts immediately
     const headStart = i / NDOTS;
     if (headStart < 0.4) {
       d.state = ONPATH;
-      d.s     = headStart * 0.55; // spread across flat section
+      d.s     = headStart * 0.55;
       const pt = curvePt(d.s);
-      d.x     = pt.x;
-      d.y     = pt.y;
+      d.x = pt.x; d.y = pt.y;
       d.order = 0.6 + headStart * 0.4;
     }
-
     d.age = 0;
     return d;
   });
 
-  // ── Render loop ───────────────────────────────────────────────
   let lastTs = null, gT = 0;
 
   function tick(ts) {
+    requestAnimationFrame(tick);
+
+    // Pause when off-screen
+    if (!visible) return;
+
+    // Throttle on low-end devices
+    if (FRAME_MS && ts - lastFrameTs < FRAME_MS) return;
+    lastFrameTs = ts;
+
     if (!lastTs) lastTs = ts;
     const dt = Math.min((ts - lastTs) / 1000, 0.05);
     lastTs = ts;
@@ -178,71 +185,56 @@
       if (d.age < 0) return;
       d.life += dt;
 
-      // ── CHAOS ─────────────────────────────────────────────────
       if (d.state === CHAOS) {
         d.vx += (Math.random() - 0.5) * 0.22;
         d.vy += (Math.random() - 0.5) * 0.22;
-
         const spd = Math.sqrt(d.vx*d.vx + d.vy*d.vy);
         const minS = 1.4, maxS = 3.8;
-        if (spd < minS) { d.vx *= minS / spd; d.vy *= minS / spd; }
-        if (spd > maxS) { d.vx *= maxS / spd; d.vy *= maxS / spd; }
-
+        if (spd < minS) { d.vx *= minS/spd; d.vy *= minS/spd; }
+        if (spd > maxS) { d.vx *= maxS/spd; d.vy *= maxS/spd; }
         d.x += d.vx; d.y += d.vy;
         if (d.x < 82)  d.vx =  Math.abs(d.vx) + 0.4;
         if (d.x > 602) d.vx = -Math.abs(d.vx) - 0.4;
         if (d.y < 52)  d.vy =  Math.abs(d.vy) + 0.4;
         if (d.y > 368) d.vy = -Math.abs(d.vy) - 0.4;
-
         if (d.life > d.chaosTime) d.state = SEEKING;
 
-      // ── SEEKING ───────────────────────────────────────────────
       } else if (d.state === SEEKING) {
         const tx   = d.snapPt.x - d.x;
         const ty   = d.snapPt.y - d.y;
         const dist = Math.sqrt(tx*tx + ty*ty);
         const prox = clamp(1 - dist / 240, 0, 1);
-
-        const tang      = curveTangent(d.snapS);
-        const spd       = Math.sqrt(d.vx*d.vx + d.vy*d.vy) || 1;
-        const alignStr  = clamp((1 - prox) * 1.1, 0, 1);
-        const pullStr   = clamp(prox * 2.2 + 0.15, 0, 1); // floor ensures arrival
-
+        const tang     = curveTangent(d.snapS);
+        const spd      = Math.sqrt(d.vx*d.vx + d.vy*d.vy) || 1;
+        const alignStr = clamp((1 - prox) * 1.1, 0, 1);
+        const pullStr  = clamp(prox * 2.2 + 0.15, 0, 1);
         d.vx += (tang.x * spd - d.vx) * alignStr * dt * 4.5;
         d.vy += (tang.y * spd - d.vy) * alignStr * dt * 4.5;
         d.vx += tx * d.pull * pullStr;
         d.vy += ty * d.pull * pullStr;
-
         const s2 = Math.sqrt(d.vx*d.vx + d.vy*d.vy);
-        if (s2 < 1.0) { d.vx *= 1.0 / s2; d.vy *= 1.0 / s2; }
+        if (s2 < 1.0) { d.vx *= 1.0/s2; d.vy *= 1.0/s2; }
         d.vx *= 0.95; d.vy *= 0.95;
-
         if (d.x < 82)  d.vx += 0.2;
         if (d.x > 602) d.vx -= 0.2;
         if (d.y < 52)  d.vy += 0.2;
         if (d.y > 368) d.vy -= 0.2;
-
         d.x += d.vx; d.y += d.vy;
-
-        // Track alignment with tangent to drive order
         const cA = Math.atan2(d.vy, d.vx);
         const tA = Math.atan2(tang.y, tang.x);
         let dA = Math.abs(cA - tA);
         if (dA > Math.PI) dA = Math.PI * 2 - dA;
         d.order = clamp(d.order + (1 - dA / Math.PI) * prox * dt * 2.2, 0, 0.88);
-
         if (dist < 7) {
-          d.state  = ONPATH;
-          d.s      = d.snapS;
-          d.x      = d.snapPt.x;
-          d.y      = d.snapPt.y;
+          d.state = ONPATH;
+          d.s     = d.snapS;
+          d.x     = d.snapPt.x;
+          d.y     = d.snapPt.y;
         }
 
-      // ── ON PATH ───────────────────────────────────────────────
       } else {
         d.s += dt * slideSpeed(d.s);
         if (d.s >= 1) { respawn(d); return; }
-
         const pt      = curvePt(d.s);
         const shimmer = (1 - d.s) * 0.7;
         d.x = pt.x + Math.sin(gT * 1.2 + d.phase) * shimmer;
@@ -250,20 +242,14 @@
         d.order = clamp(d.order + dt * 2.5, 0, 1);
       }
 
-      // ── Draw dot ───────────────────────────────────────────────
       const [r, g, b] = lerpCol(CHAOS_COL, CTA, d.order);
-
       let alpha;
       if (d.state === ONPATH) {
-        // Fade in along the curve — near-transparent at bottom, solid at top
         alpha = d.baseAlpha * (0.07 + Math.pow(d.s, 0.45) * 0.93);
       } else {
         alpha = d.baseAlpha * (0.82 + d.order * 0.18);
       }
-
-      const riseSwell = d.state === ONPATH
-        ? clamp((d.s - 0.50) / 0.50, 0, 1) * 1.1
-        : 0;
+      const riseSwell = d.state === ONPATH ? clamp((d.s - 0.50) / 0.50, 0, 1) * 1.1 : 0;
       const radius = d.r * (0.65 + d.order * 0.5) + riseSwell;
 
       ctx.beginPath();
@@ -271,8 +257,6 @@
       ctx.fillStyle = `rgba(${r},${g},${b},${alpha})`;
       ctx.fill();
     });
-
-    requestAnimationFrame(tick);
   }
 
   requestAnimationFrame(tick);
