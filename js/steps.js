@@ -44,16 +44,18 @@
 
     // Force the wrapper to be a positioned box with a guaranteed size
     const SIZE = 72; // px — adjust to match your CSS if needed
-    numEl.style.position   = 'relative';
-    numEl.style.display    = 'inline-flex';
-    numEl.style.alignItems = 'center';
+    numEl.style.position      = 'relative';
+    numEl.style.display       = 'inline-flex';
+    numEl.style.alignItems    = 'center';
     numEl.style.justifyContent = 'center';
-    numEl.style.width      = SIZE + 'px';
-    numEl.style.height     = SIZE + 'px';
-    numEl.style.overflow   = 'visible';
+    numEl.style.width         = SIZE + 'px';
+    numEl.style.height        = SIZE + 'px';
+    numEl.style.overflow      = 'visible';
+    numEl.style.flexShrink    = '0';      // prevent squishing in flex rows
+    numEl.style.marginRight   = '12px';   // buffer so canvas doesn't bleed into title text
 
     // Hide original text but keep the space
-    numEl.style.color      = 'transparent';
+    numEl.style.color         = 'transparent';
 
     const canvas = document.createElement('canvas');
     canvas.style.cssText   = 'position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;';
