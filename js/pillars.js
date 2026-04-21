@@ -3,11 +3,9 @@
  * High-resolution serif Roman numerals I, II, III formed by small red dots
  * rising from a continuous pool of gray chaos dots.
  *
- * Design:
- *  - NUMERAL_H fixes the visual size; NUMERAL_ROWS controls dot resolution
- *  - Larger dot pool (BENCH=50) keeps gray chaos dense with no visible gaps
- *  - Slow peel (1.0–1.8s) with slot freed at peel-start ensures replacements
- *    arrive before departing dots fully fade — numeral always legible
+ * Continuity fix: each dot's settleTimer is pre-offset on spawn so peels
+ * are always rolling — never all dots settled simultaneously, so there is
+ * always a subset rising from the bottom at any point in time.
  *
  * Optimisations:
  *  - Starts only when pillar scrolls into view (IntersectionObserver)
@@ -23,22 +21,17 @@
   const pillars = document.querySelectorAll('.pillar');
   if (!pillars.length) return;
 
-  // ── Performance — shared ──────────────────────────────────────
   const LOW_END  = (navigator.hardwareConcurrency || 8) <= 4;
   const FRAME_MS = LOW_END ? 1000 / 30 : 0;
 
-  // ── Dot sizing — fixed numeral height, derived dot size ───────
   const CTA          = [148, 52, 36];
-  const CHAOS        = [115, 113, 111];
-  const NUMERAL_H    = 72;  // total numeral height in px — stays constant
-  const NUMERAL_ROWS = 17;  // rows of dots — higher = finer resolution
+  const CHAOS_COL    = [115, 113, 111];
+  const NUMERAL_H    = 72;
+  const NUMERAL_ROWS = 17;
   const DOT_R  = (NUMERAL_H / NUMERAL_ROWS) / 2 * 0.82;
   const GAP    = (NUMERAL_H / NUMERAL_ROWS) - DOT_R * 2;
-  const STEP   = DOT_R * 2 + GAP; // = NUMERAL_H / NUMERAL_ROWS
+  const STEP   = DOT_R * 2 + GAP;
 
-  // ── High-resolution serif numeral grids ──────────────────────
-  // Top 2 and bottom 2 rows = serif bars (full width)
-  // Middle rows = stems only
   function makeNumeral(stemCols, serifRanges, totalCols) {
     return Array.from({ length: NUMERAL_ROWS }, (_, r) => {
       const row = new Array(totalCols).fill(0);
@@ -54,12 +47,9 @@
     });
   }
 
-  // I:   stem [2,3],         serif 0–5,                       total 6 cols
-  // II:  stems [2,3, 9,10],  serifs 0–5 and 7–12,             total 13 cols
-  // III: stems [2,3,9,10,16,17], serifs 0–5, 7–12, 14–19,    total 20 cols
   const GLYPHS = [
-    makeNumeral([2, 3],          [{ from:0, to:5 }],                                      6),
-    makeNumeral([2, 3, 9, 10],   [{ from:0, to:5 }, { from:7, to:12 }],                  13),
+    makeNumeral([2, 3],             [{ from:0, to:5 }],                                            6),
+    makeNumeral([2, 3, 9, 10],      [{ from:0, to:5 }, { from:7,  to:12 }],                       13),
     makeNumeral([2, 3, 9, 10, 16, 17], [{ from:0, to:5 }, { from:7, to:12 }, { from:14, to:19 }], 20),
   ];
 
@@ -73,7 +63,6 @@
     ];
   }
 
-  // ── Per-pillar initialiser ────────────────────────────────────
   function initPillar(pillarEl, glyphIdx) {
 
     const numEl = pillarEl.querySelector('.pillar-num');
@@ -87,16 +76,17 @@
     const ctx   = canvas.getContext('2d');
     const DPR   = window.devicePixelRatio || 1;
     const glyph = GLYPHS[glyphIdx];
-    const rows  = glyph.length;
     const cols  = glyph[0].length;
 
     const litPixels = [];
-    for (let r = 0; r < rows; r++)
+    for (let r = 0; r < glyph.length; r++)
       for (let c = 0; c < cols; c++)
         if (glyph[r][c]) litPixels.push({ r, c });
 
-    // Large bench keeps gray pool dense — no visible gaps in chaos layer
-    const BENCH   = 50;
+    // Extra dots beyond numeral targets — these also cycle through the
+    // rise→seek→settle→peel loop, keeping additional gray dots visible
+    const EXTRA = 20;
+
     const RISING  = 0, SEEKING = 1, SETTLED = 2, PEELING = 3;
 
     let W, H, targets = [], dots = [];
@@ -105,12 +95,9 @@
 
     function buildTargets() {
       const gW = cols * STEP;
-      const ox = W / 2 - gW / 2 + DOT_R;
-      const oy = 22;
+      const ox = W / 2 - gW / 2 + DOT_R, oy = 22;
       targets = litPixels.map(({ r, c }) => ({
-        x: ox + c * STEP,
-        y: oy + r * STEP,
-        occupied: false,
+        x: ox + c * STEP, y: oy + r * STEP, occupied: false,
       }));
     }
 
@@ -128,25 +115,33 @@
       d.vy        = -(0.45 + Math.random() * 0.8);
       d.baseAlpha = 0.6 + Math.random() * 0.3;
       d.state     = RISING; d.order = 0; d.life = 0;
-      // Long rise = gray dots linger in lower half, chaos always visible
       d.riseTime  = 1.2 + Math.random() * 2.0;
       d.pull      = 0.14 + Math.random() * 0.08;
       d.phase     = Math.random() * Math.PI * 2;
       d.tidx      = tidx;
       d.target    = targets[tidx];
       d.settleTimer    = 0;
-      d.maxSettleTime  = 6 + Math.random() * 8;   // hold settled longer
+      d.maxSettleTime  = 6 + Math.random() * 8;
       d.peelTimer      = 0;
-      d.maxPeelTime    = 1.0 + Math.random() * 0.8; // slow fade — replacement arrives first
+      d.maxPeelTime    = 1.0 + Math.random() * 0.8;
     }
 
     function buildDots() {
-      dots = Array.from({ length: targets.length + BENCH }, (_, i) => {
+      const total = targets.length + EXTRA;
+      dots = Array.from({ length: total }, (_, i) => {
         const tidx = i < targets.length ? i : getFreeTidx();
         const d = {};
         spawnRiser(d, tidx);
-        d.y = H + 4 + Math.random() * (H * 1.0);
-        d.riseTime += i * 0.025; // cascade so seeking staggers naturally
+        // Spread initial y so they don't all arrive at the same time
+        d.y = H + 4 + Math.random() * (H * 0.8);
+        d.riseTime += i * 0.025;
+
+        // KEY FIX: pre-offset settleTimer randomly across the full window
+        // so that at any given moment, dots are at different stages of their
+        // cycle — some just arrived, some mid-settle, some about to peel.
+        // This prevents the "all settled at once → all quiet" pause.
+        d._settleOffset = Math.random() * (6 + Math.random() * 8);
+
         return d;
       });
     }
@@ -170,11 +165,7 @@
 
     function tick(ts) {
       requestAnimationFrame(tick);
-
-      // Pause when off-screen
       if (!visible) return;
-
-      // Throttle on low-end devices
       if (FRAME_MS && ts - lastFrameTs < FRAME_MS) return;
       lastFrameTs = ts;
 
@@ -189,7 +180,7 @@
 
         if (d.state === RISING) {
           d.x += d.vx; d.y += d.vy;
-          d.vy *= 0.994; // gentle decel — floats and lingers
+          d.vy *= 0.994;
           d.vx += (Math.random() - 0.5) * 0.02; d.vx *= 0.98;
           if (d.x < 6)   d.vx += 0.12;
           if (d.x > W-6) d.vx -= 0.12;
@@ -210,6 +201,8 @@
           if (dist < DOT_R * 0.9) {
             d.state = SETTLED; d.x = tgt.x; d.y = tgt.y;
             d.order = 1; tgt.occupied = true;
+            // Apply pre-offset so this dot peels at a staggered time
+            d.settleTimer = d._settleOffset || 0;
           }
 
         } else if (d.state === SETTLED) {
@@ -218,7 +211,6 @@
           d.y = d.target.y + Math.cos(gT * 0.5 + d.phase) * 0.2;
           d.order = 1;
           if (d.settleTimer > d.maxSettleTime) {
-            // Free slot immediately so a seeker can claim it before this dot fades
             d.target.occupied = false;
             d.state = PEELING; d.peelTimer = 0;
             const a = Math.random() * Math.PI * 2;
@@ -230,13 +222,11 @@
           d.peelTimer += dt;
           d.x += d.vx; d.y += d.vy;
           d.vx *= 0.95; d.vy *= 0.95;
-          // Linear fade over full peel duration — smooth, never sudden
           d.order = clamp(1 - d.peelTimer / d.maxPeelTime, 0, 1);
-          if (d.peelTimer > d.maxPeelTime) spawnRiser(d, getFreeTidx());
+          if (d.peelTimer > d.maxPeelTime) spawnRiser(d, d.tidx);
         }
 
-        // Draw
-        const [r, g, b] = lerpCol(CHAOS, CTA, d.order);
+        const [r, g, b] = lerpCol(CHAOS_COL, CTA, d.order);
         const alpha = d.baseAlpha * (
           d.state === RISING  ? clamp(d.life / 0.4, 0, 1) * 0.70 :
           d.state === PEELING ? 0.55 * d.order :
@@ -255,7 +245,6 @@
       });
     }
 
-    // ── ResizeObserver ────────────────────────────────────────────
     let resizeTimer = null;
     const ro = new ResizeObserver(() => {
       clearTimeout(resizeTimer);
@@ -263,7 +252,6 @@
     });
     ro.observe(pillarEl);
 
-    // ── IntersectionObserver — start + pause/resume ───────────────
     const io = new IntersectionObserver(entries => {
       visible = entries[0].isIntersecting;
       if (visible) start();
@@ -273,7 +261,6 @@
     setTimeout(resize, 80);
   }
 
-  // Boot each pillar independently with a small stagger
   pillars.forEach((pillarEl, i) => {
     if (i > 2) return;
     setTimeout(() => initPillar(pillarEl, i), i * 200);
